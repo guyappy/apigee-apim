@@ -54,6 +54,18 @@ const Proxy = {
     console.log(deployment.name)
     return deployment
   },
+  downloadProxy: async (config, name = []) => {
+    const apigee = new Apigee(config)
+    const proxyZip = await apigee.proxy.detail(name)
+    await fs.ensureDir(`downloadedproxies/${name}`)
+    let writeStream = fs.createWriteStream(`downloadedproxies/${name}/apiproxy.zip`)
+    proxyZip.pipe(writeStream)
+    writeStream.on('finish', () => {
+      writeStream.end()
+      fs.createReadStream(`downloadedproxies/${name}/apiproxy.zip`)
+        .pipe(unzipper.Extract({ path: `downloadedproxies/${name}` }))
+    })
+  },
   downloadProxies: async (config, list = []) => {
     const apigee = new Apigee(config)
     if (list.length === 0) {

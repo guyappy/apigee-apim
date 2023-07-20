@@ -16,14 +16,16 @@ class Proxy {
   async detail (name) {
     try {
       const deployment = await this.request(`/organizations/${this.config.organization}/apis/${name}/deployments`)
-      const revision = deployment.data.environment[1].revision.find((rev) => rev.state === 'deployed')
+      // const revision = deployment.data.environment[1].revision.find((rev) => rev.state === 'deployed')
+      const revision = deployment.data.deployments[0].revision
       const response = await this.request(
         {
-          url: `/organizations/${this.config.organization}/apis/${name}/revisions/${revision.name}?format=bundle`,
+          url: `/organizations/${this.config.organization}/apis/${name}/revisions/${revision}?format=bundle`,
           responseType: 'stream'
         })
       return response.data
     } catch (e) {
+      console.log(`error: ${e.message}`)
       console.log(`Proxy ${name} is not deployed in ${this.config.environment}`)
       return null
     }
